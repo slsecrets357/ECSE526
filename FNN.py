@@ -3,7 +3,9 @@ import pandas as pd
 from numpy import newaxis
 import time
 import csv
-
+from sklearn.metrics import accuracy_score
+import sklearn
+import matplotlib.pyplot as plt
 #save hidden parameters of a network into txt file
 def save_net(filename, net):
     f = open(filename, 'w')
@@ -65,7 +67,7 @@ class Layer:
     def backward_propagation(self, output_error, alpha):
         raise NotImplementedError
 class FCLayer(Layer):
-    # input_size = number of input neurons
+    # input_size = number of input neurons e
     # output_size = number of output neurons
     def __init__(self, input_size, output_size):
         self.weights = np.random.rand(input_size, output_size) - 0.5
@@ -293,9 +295,9 @@ net.add(ActivationLayer(sigmoid, sigmoid_prime))
 t1 = time.time()
 #net.bgd(X_train[0:1000], Y_train[0:1000], epochs=4000, alpha=0.1)
 #net.sgd(X_train, Y_train, epochs=11, alpha=0.1)
-net.mini_bgd(X_train, Y_train, epochs=10, alpha=0.1)
+#net.mini_bgd(X_train, Y_train, epochs=10, alpha=0.1)
 #save_net('net_minibgd_100_3sigmoid_50.txt', net)
-#net = load_net('net_minibgd_100_3sigmoid_50.txt')
+net = load_net('net_minibgd_100_3sigmoid_50.txt')
 print("time taken: ", time.time()-t1)
 
 #testing
@@ -308,3 +310,5 @@ x_test = (data[0:data.shape[0]-1].T)
 print("test x,y shapes: ", x_test.shape, y_test.shape)
 out2 = net.predict(x_test)
 print("accuracy: ", accuracy(out2, y_test))
+sklearn.metrics.ConfusionMatrixDisplay.from_predictions(y_test,out2)
+plt.show()
