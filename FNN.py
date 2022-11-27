@@ -68,8 +68,6 @@ class Layer:
     def backward_propagation(self, output_error, alpha):
         raise NotImplementedError
 class FCLayer(Layer):
-    # input_size = number of input neurons
-    # output_size = number of output neurons
     def __init__(self, input_size, output_size):
         self.weights = np.random.rand(input_size, output_size) - 0.5
         self.bias = np.random.rand(1, output_size) - 0.5
@@ -115,9 +113,11 @@ def relu_prime(x):
 def sigmoid(x):
     return 1 /(1 + np.exp(-x))
 def sigmoid_prime(x):
-    return sigmoid(x)*(1 - sigmoid(x))
+    s = sigmoid(x)
+    return s*(1 - s)
 def softmax(z):
-    return np.exp(z)/sum(np.exp(z))
+    expz = np.exp(z)
+    return expz/np.sum(expz,axis=1)
 def softmax_prime(z):
     return z
 #error functions
@@ -240,13 +240,18 @@ class Network:
 
 #helper function that shuffles training set; used in mini-batch gradient descent
 def shuffle_batch(x_train, y_train):
-    y = y_train.reshape((1, y_train.size))
-    batch = np.concatenate([y, x_train.T]).T
-    np.random.shuffle(batch)
-    batch = batch.T
-    shuffledY = batch[0]
-    shuffledX = batch[1:batch.shape[1]].T
-    return shuffledX, shuffledY
+    size = len(y_train)
+    assert len(x_train) == size
+    permutation = np.random.permutation(size)
+    return x_train[permutation], y_train[permutation]
+#     y = y_train.reshape((1, y_train.size))
+#     batch = np.concatenate([y, x_train.T]).T
+#     np.random.shuffle(batch)
+#     batch = batch.T
+#     shuffledY = batch[0]
+#     shuffledX = batch[1:batch.shape[1]].T
+#     return shuffledX, shuffledY
+
 #helper function that one hot encodes output 
 def one_hot(Y, numOutputs):
     oneHotY = np.zeros((Y.size,numOutputs))
@@ -295,7 +300,7 @@ net.add(ActivationLayer(sigmoid, sigmoid_prime))
 #training/loading
 t1 = time.time()
 #net.bgd(X_train[0:1000], Y_train[0:1000], epochs=4000, alpha=0.1)
-#net.sgd(X_train, Y_train, epochs=11, alpha=0.1)
+net.sgd(X_train[0:1000], Y_train[0:1000], epochs=11, alpha=0.1)
 #net.mini_bgd(X_train, Y_train, epochs=10, alpha=0.1)
 #save_net('net_minibgd_100_3sigmoid_50.txt', net)
 net = load_net('net_minibgd_100_3sigmoid_50.txt')
@@ -311,5 +316,5 @@ x_test = (data[0:data.shape[0]-1].T)
 print("test x,y shapes: ", x_test.shape, y_test.shape)
 out2 = net.predict(x_test)
 print("accuracy: ", accuracy(out2, y_test))
-sklearn.metrics.ConfusionMatrixDisplay.from_predictions(y_test, out2)
+sklearn.metrics.ConfusionMatrixDisplay.from_predictions(y_test,out2)
 plt.show()
